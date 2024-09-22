@@ -6,7 +6,8 @@ import {
 } from "firebase/auth";
 
 import { APIResponse } from "@/lib/types/types";
-import { auth } from "@/configs/firebase";
+import { auth, db } from "@/configs/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export async function signInWithGoogle() {
   const provider = new GoogleAuthProvider();
@@ -14,7 +15,16 @@ export async function signInWithGoogle() {
   try {
     const userCreds = await signInWithPopup(auth, provider);
     const idToken = await userCreds.user.getIdToken();
+    const userRef = doc(db, "Users", userCreds.user.uid);
+    const userDoc = await getDoc(userRef);
 
+    if (!userDoc.exists()) {
+      await setDoc(userRef, {
+        uid: userCreds.user.uid,
+        email: userCreds.user.email,
+        createdAt: new Date(),
+      });
+    }
     const response = await fetch("/api/auth/sign-in", {
       method: "POST",
       headers: {
@@ -68,6 +78,17 @@ export async function createUserWithEmailAndPasswordAuth(
       password,
     );
     const idToken = await userCreds.user.getIdToken();
+    const userRef = doc(db, "Users", userCreds.user.uid);
+    const userDoc = await getDoc(userRef);
+
+    if (!userDoc.exists()) {
+      await setDoc(userRef, {
+        uid: userCreds.user.uid,
+        email: userCreds.user.email,
+        createdAt: new Date(),
+      });
+    }
+
 
     const response = await fetch("/api/auth/sign-in", {
       method: "POST",
