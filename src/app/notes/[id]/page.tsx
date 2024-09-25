@@ -1,8 +1,10 @@
 import NotePage from "@/sections/note-page/note-page"
+import { getCurrentUser } from "@/lib/firebase/firebase-admin";
 
-const page = () => {
+const page = async () => {
+  const user = await getCurrentUser()
   return (
-    <NotePage />
+    <NotePage user={user}/>
   )
 }
 export default page
