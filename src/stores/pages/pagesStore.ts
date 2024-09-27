@@ -1,10 +1,6 @@
-
-
-import { Page } from '@/lib/types/types';
-import { YooptaBlockData } from '@yoopta/editor';
-import { create } from 'zustand';
-
-
+import { Page } from "@/lib/types/types";
+import { YooptaBlockData } from "@yoopta/editor";
+import { create } from "zustand";
 
 export type PagesDataType = {
   pages: Page[];
@@ -21,12 +17,12 @@ export type PagesStoreActions = {
   updateBlocks: (newBlocks: YooptaBlockData[]) => void;
 };
 
-export type PagesStore =PagesState & PagesStoreActions;
+export type PagesStore = PagesState & PagesStoreActions;
 
 export const initialState: PagesState = {
   pages: [],
   blocks: [],
-}
+};
 
 export const usePagesStore = create<PagesStore>()((set) => ({
   ...initialState,

@@ -1,42 +1,44 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from 'react'
-import { PlusCircle, File, ChevronRight, ChevronLeft } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import WithSavingToDatabase from '@/components/editor/editor'
-import { fetchUserPages } from '@/services/pageService/pageService'
-import { usePagesStore } from '@/stores/pages/pagesStore'
-
-
+import { useState, useEffect } from "react";
+import { PlusCircle, File, ChevronRight, ChevronLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import WithSavingToDatabase from "@/components/editor/editor";
+import { fetchUserPages } from "@/services/pageService/pageService";
+import { usePagesStore } from "@/stores/pages/pagesStore";
 
 interface Page1 {
-  id: string
-  title: string
-  content: string
+  id: string;
+  title: string;
+  content: string;
 }
 
-export default function NotePage({user}: {user: any}) {
+export default function NotePage({ user }: { user: any }) {
   const [pages, setPages] = useState<Page1[]>([
-    { id: '1', title: 'Welcome', content: '# Welcome to Your Notion-like Notes\n\nThis is a simple Notion-like notes application. You can:\n\n- Create new pages\n- Edit page content directly\n- Use Markdown syntax for formatting\n\n## Example List\n\n- Item 1\n- Item 2\n- Item 3\n\n## Example Checklist\n\n- [ ] Task 1\n- [x] Task 2\n- [ ] Task 3\n\n## Example Code Block\n\n```javascript\nconsole.log("Hello, World!");\n```\n\nEnjoy taking notes!' }
-  ])
-  const pagesState = usePagesStore()
-  
-  const [currentPage, setCurrentPage] = useState<Page1>(pages[0])
-  const [newPageTitle, setNewPageTitle] = useState('')
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const [selectedTab, setSelectedTab] = useState<"write" | "preview">("write")
-  
+    {
+      id: "1",
+      title: "Welcome",
+      content:
+        '# Welcome to Your Notion-like Notes\n\nThis is a simple Notion-like notes application. You can:\n\n- Create new pages\n- Edit page content directly\n- Use Markdown syntax for formatting\n\n## Example List\n\n- Item 1\n- Item 2\n- Item 3\n\n## Example Checklist\n\n- [ ] Task 1\n- [x] Task 2\n- [ ] Task 3\n\n## Example Code Block\n\n```javascript\nconsole.log("Hello, World!");\n```\n\nEnjoy taking notes!',
+    },
+  ]);
+  const pagesState = usePagesStore();
+
+  const [currentPage, setCurrentPage] = useState<Page1>(pages[0]);
+  const [newPageTitle, setNewPageTitle] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [selectedTab, setSelectedTab] = useState<"write" | "preview">("write");
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === '/') {
-        setSelectedTab(prev => prev === "write" ? "preview" : "write")
+      if (e.ctrlKey && e.key === "/") {
+        setSelectedTab((prev) => (prev === "write" ? "preview" : "write"));
       }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // const addNewPage = () => {
   //   if (newPageTitle.trim() === '') return
@@ -51,33 +53,34 @@ export default function NotePage({user}: {user: any}) {
   // }
 
   const updatePageContent = (content: string) => {
-    const updatedPages = pages.map(page =>
-      page.id === currentPage.id ? { ...page, content } : page
-    )
-    setPages(updatedPages)
-    setCurrentPage({ ...currentPage, content })
-  }
-
-  
+    const updatedPages = pages.map((page) =>
+      page.id === currentPage.id ? { ...page, content } : page,
+    );
+    setPages(updatedPages);
+    setCurrentPage({ ...currentPage, content });
+  };
 
   const fetchUsersPages = async () => {
-   
-      const pages = await fetchUserPages(user?.uid as string);
-      pagesState.updateBlocks(pages.blocks || [])
-      pagesState.updatePages(pages.pages || [])
-    
+    const pages = await fetchUserPages(user?.uid as string);
+    console.log(pages);
+    pagesState.updateBlocks(pages.blocks || []);
+    pagesState.updatePages(pages.pages || []);
   };
 
   useEffect(() => {
-    
-      void fetchUsersPages()
-    
-  }, [])
+    void fetchUsersPages();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <div className="flex h-screen bg-white"> 
+    <div className="flex h-screen bg-white">
       {/* Sidebar */}
-      <div className={`bg-gray-100 ${isSidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300 ease-in-out`}>
+      <div
+        className={`bg-gray-100 ${
+          isSidebarOpen ? "w-64" : "w-16"
+        } transition-all duration-300 ease-in-out`}
+      >
         <div className="p-4">
           <Button
             variant="ghost"
@@ -85,7 +88,11 @@ export default function NotePage({user}: {user: any}) {
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="mb-4"
           >
-            {isSidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            {isSidebarOpen ? (
+              <ChevronLeft className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
           </Button>
           {isSidebarOpen && (
             <>
@@ -102,11 +109,13 @@ export default function NotePage({user}: {user: any}) {
                 </Button> */}
               </div>
               <nav>
-                {pages.map(page => (
+                {pages.map((page) => (
                   <Button
                     key={page.id}
                     variant="ghost"
-                    className={`w-full justify-start mb-1 ${currentPage.id === page.id ? 'bg-gray-200' : ''}`}
+                    className={`w-full justify-start mb-1 ${
+                      currentPage.id === page.id ? "bg-gray-200" : ""
+                    }`}
                     onClick={() => setCurrentPage(page)}
                   >
                     <File className="mr-2 h-4 w-4" />
@@ -121,8 +130,8 @@ export default function NotePage({user}: {user: any}) {
 
       {/* Main Content */}
       <div className="flex-1 p-8 overflow-auto">
-        <WithSavingToDatabase blocks={pagesState.blocks}/>
+        <WithSavingToDatabase blocks={pagesState.blocks} />
       </div>
     </div>
-  )
+  );
 }
