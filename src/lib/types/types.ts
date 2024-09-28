@@ -1,20 +1,20 @@
+import { YooptaBlockData } from "@yoopta/editor";
 import { DocumentReference, Timestamp } from "firebase/firestore";
 
 export type APIResponse<T = object> =
   | { success: true; data: T }
   | { success: false; error: string };
 
-
-export interface Permission{
+export interface Permission {
   userId: DocumentReference;
-  role: 'owner' | 'editor' | 'viewer';
+  role: "owner" | "editor" | "viewer";
 }
 
 export interface User {
   uid: string;
   email: string;
   createdAt: Timestamp;
-  pages: DocumentReference[]
+  pages: DocumentReference[];
 }
 
 export interface Page {
@@ -24,7 +24,12 @@ export interface Page {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   permissions: Permission[];
-  blocks: any;
   sharedWith: DocumentReference[];
 }
 
+export type Block = { id: string; blocks: YooptaBlockData };
+
+export type PageWithBlocks = {
+  pageId: string;
+  blocks: { [key: string]: YooptaBlockData };
+};
