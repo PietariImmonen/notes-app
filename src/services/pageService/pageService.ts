@@ -7,6 +7,8 @@ import {
   getDoc,
   setDoc,
   writeBatch,
+  serverTimestamp,
+  addDoc,
 } from "firebase/firestore";
 
 import { Block, Page, PageWithBlocks } from "@/lib/types/types"; // Importing the Page interface
@@ -107,5 +109,39 @@ export async function savePageBlocks(
   } catch (error) {
     console.error("Error saving page blocks:", error);
     throw error;
+  }
+}
+
+export async function createNewPage(
+  userId: string,
+  pageTitle: string,
+): Promise<Page | undefined> {
+  try {
+    const pagesCollection = collection(db, "Pages");
+
+    const userRef = doc(db, "Users", userId);
+
+    const newPageData = {
+      title: pageTitle,
+      ownerId: userRef,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      public: false,
+      sharedWith: [],
+    };
+
+    const newPageRef = await addDoc(pagesCollection, newPageData);
+
+    // // Create an initial empty block for the new page
+    // const blocksCollection = collection(db, "Pages", newPageRef.id, "blocks");
+    // Fetch the newly created page
+    const newPage = await getDoc(newPageRef);
+
+    // Return the page data
+    return { id: newPageRef.id, ...newPage.data() } as Page;
+  } catch (error) {
+    console.error("Error creating new page:", error);
+    throw error;
+    return undefined;
   }
 }

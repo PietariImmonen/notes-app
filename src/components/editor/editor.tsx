@@ -1,7 +1,4 @@
-import YooptaEditor, {
-  createYooptaEditor,
-  YooptaContentValue,
-} from "@yoopta/editor";
+import YooptaEditor, { createYooptaEditor } from "@yoopta/editor";
 
 import Paragraph from "@yoopta/paragraph";
 import Blockquote from "@yoopta/blockquote";

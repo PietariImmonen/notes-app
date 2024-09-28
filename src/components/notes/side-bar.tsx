@@ -1,22 +1,36 @@
-import { Page } from "@/lib/types/types";
+import { Page, User } from "@/lib/types/types";
 import { Button } from "../ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, PlusCircle } from "lucide-react";
 import { Input } from "../ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { usePagesStore } from "@/stores/pages/pagesStore";
+import { createNewPage } from "@/services/pageService/pageService";
 
 interface SideBarProps {
   isSidebarOpen: boolean;
   setIsSidebarOpen: (isSidebarOpen: boolean) => void;
-  pages: Page[];
+  user: User;
 }
 
-const SideBar = ({ isSidebarOpen, setIsSidebarOpen, pages }: SideBarProps) => {
+const SideBar = ({ isSidebarOpen, setIsSidebarOpen, user }: SideBarProps) => {
   const [newPageTitle, setNewPageTitle] = useState("");
+  const { pages, updatePages, updateBlocks, blocks, setCurrentBlocks } =
+    usePagesStore();
 
   // Get the id from the URL
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+
+  const createPage = async () => {
+    const newPage = await createNewPage(user.uid as string, newPageTitle);
+    if (newPage) {
+      updatePages([...pages, newPage]);
+      updateBlocks([...blocks, { pageId: newPage.id, blocks: {} }]);
+      router.push(`/notes/${newPage.id}`);
+      setCurrentBlocks({ pageId: newPage.id, blocks: {} });
+    }
+  };
 
   return (
     <div
@@ -47,9 +61,9 @@ const SideBar = ({ isSidebarOpen, setIsSidebarOpen, pages }: SideBarProps) => {
                 onChange={(e) => setNewPageTitle(e.target.value)}
                 className="mr-2"
               />
-              {/* <Button onClick={addNewPage} size="icon">
-                  <PlusCircle className="h-4 w-4" />
-                </Button> */}
+              <Button onClick={createPage} size="icon">
+                <PlusCircle className="h-4 w-4" />
+              </Button>
             </div>
             <nav>
               {pages.map((page) => (

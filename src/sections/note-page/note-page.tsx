@@ -45,6 +45,22 @@ export default function NotePage({ user }: { user: any }) {
     );
   };
 
+  const handlePageTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value;
+    pagesState.setCurrentPage({
+      ...pagesState.currentPage!,
+      title: newTitle,
+    });
+    // Update the title in the pages array as well
+    pagesState.updatePages(
+      pagesState.pages.map((page) =>
+        page.id === pagesState.currentPage?.id
+          ? { ...page, title: newTitle }
+          : page,
+      ),
+    );
+  };
+
   const savePageTitle = async () => {
     if (pagesState.currentPage) {
       try {
@@ -71,7 +87,7 @@ export default function NotePage({ user }: { user: any }) {
       <SideBar
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
-        pages={pagesState.pages}
+        user={user}
       />
 
       {/* Main Content */}
@@ -80,13 +96,7 @@ export default function NotePage({ user }: { user: any }) {
           type="text"
           className="text-4xl font-bold ml-8 w-full bg-transparent border-none focus:outline-none"
           value={pagesState.currentPage?.title || ""}
-          onChange={(e) => {
-            const newTitle = e.target.value;
-            pagesState.setCurrentPage({
-              ...pagesState.currentPage!,
-              title: newTitle,
-            });
-          }}
+          onChange={handlePageTitleChange}
           onBlur={savePageTitle}
         />
         <Separator className="my-8" />

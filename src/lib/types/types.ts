@@ -24,6 +24,7 @@ export interface Page {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   permissions: Permission[];
+  public: boolean;
   sharedWith: DocumentReference[];
 }
 
