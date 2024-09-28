@@ -43,7 +43,6 @@ export async function fetchUserPages(
       });
       blocks.push(pageBlocks);
     }
-    console.log({ pages: pages, blocks: blocks });
     return { pages: pages, blocks: blocks };
   } catch (error) {
     console.error("Error fetching user pages:", error);
@@ -51,6 +50,15 @@ export async function fetchUserPages(
   }
 }
 
+/**
+ * This function is used to save the blocks of a page to the server.
+ * It uses a batch to update the blocks.
+ * It deletes any blocks that are in the existing blocks but not in the new blocks.
+ * It returns true if the blocks were saved successfully, false otherwise.
+ * @param pageId - The id of the page to save the blocks to.
+ * @param blocks - The blocks to save to the page.
+ * @returns - True if the blocks were saved successfully, false otherwise.
+ */
 export async function savePageBlocks(
   pageId: string,
   blocks: { [key: string]: YooptaBlockData },
@@ -74,9 +82,7 @@ export async function savePageBlocks(
 
     for (const [blockId, block] of Object.entries(blocks)) {
       const blockRef = doc(blocksRef, blockId);
-      console.log("blockId", blockId);
       if (!existingBlocks.has(blockId)) {
-        console.log(block);
         // New block, create it
         batch.set(blockRef, block);
       } else {

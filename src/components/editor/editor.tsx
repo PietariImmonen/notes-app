@@ -29,7 +29,7 @@ import Toolbar, { DefaultToolbarRender } from "@yoopta/toolbar";
 import LinkTool, { DefaultLinkToolRender } from "@yoopta/link-tool";
 // import { DividerPlugin } from './customPlugins/Divider';
 
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { withSavingToDatabaseValue } from "./initValue";
 import { PageWithBlocks } from "@/lib/types/types";
 import { useParams } from "next/navigation";
@@ -113,41 +113,47 @@ const MARKS = [Bold, Italic, CodeMark, Underline, Strike, Highlight];
 function WithSavingToDatabase({ blocks }: { blocks: PageWithBlocks }) {
   const editor = useMemo(() => createYooptaEditor(), []);
   const selectionRef = useRef(null);
-
-  const fetchToServer = async (data: YooptaContentValue) => {
-    //...your async call to server
-    console.log(data);
-    await savePageBlocks(blocks.pageId, data);
-  };
+  const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const onSaveToServer = async () => {
     const editorContent = editor.getEditorValue();
     try {
-      await fetchToServer(editorContent);
+      await savePageBlocks(blocks.pageId, editorContent);
       console.log("saved");
     } catch (error) {
       console.error("Error saving data:", error);
     }
   };
-  // function handleChange(value: YooptaContentValue) {
-  //   console.log("DATA ON CHANGE", value);
-  // }
 
-  // useEffect(() => {
-  //   editor.on("change", handleChange);
-  //   return () => {
-  //     editor.off("change", handleChange);
-  //   };
-  // }, [editor]);
+  /**
+   * This function is used to save the editor content to the server.
+   * It uses a timeout to prevent the function from being called too often.
+   * The timeout is reset every time the editor content changes.
+   * The timeout is set to 1 second.
+   * The function is called every time the editor content changes.
+   */
+  const handleEditorChange = useCallback(() => {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+    }
+    const newTimeout = setTimeout(() => {
+      onSaveToServer();
+    }, 1000);
+    setSaveTimeout(newTimeout);
+  }, [saveTimeout]);
+
+  useEffect(() => {
+    editor.on("change", handleEditorChange);
+    return () => {
+      editor.off("change", handleEditorChange);
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
+      }
+    };
+  }, [editor, handleEditorChange, saveTimeout]);
+
   return (
     <div ref={selectionRef} className="m-10">
-      <button
-        type="button"
-        onClick={onSaveToServer}
-        className="bg-[#007aff] text-[14px] text-nowrap my-2 mr-0 md:mr-4 text-[#fff] max-w-[100px] px-4 py-2 rounded-md"
-      >
-        Save data
-      </button>
       {blocks && (
         <YooptaEditor
           className="min-w-full h-full"

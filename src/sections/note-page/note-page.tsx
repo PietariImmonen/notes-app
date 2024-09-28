@@ -10,6 +10,9 @@ import { usePagesStore } from "@/stores/pages/pagesStore";
 import SideBar from "@/components/notes/side-bar";
 import { Page, PageWithBlocks } from "@/lib/types/types";
 import { useParams } from "next/navigation";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "@/configs/firebase";
+import { Separator } from "@/components/ui/separator";
 
 export default function NotePage({ user }: { user: any }) {
   const pagesState = usePagesStore();
@@ -27,6 +30,9 @@ export default function NotePage({ user }: { user: any }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  /**
+   * Fetch the user's pages and set the current page and blocks
+   */
   const fetchUsersPages = async () => {
     const data = await fetchUserPages(user?.uid as string);
     pagesState.updateBlocks(data.blocks || []);
@@ -37,6 +43,21 @@ export default function NotePage({ user }: { user: any }) {
     pagesState.setCurrentBlocks(
       data.blocks.find((block: PageWithBlocks) => block.pageId === id) || null,
     );
+  };
+
+  const savePageTitle = async () => {
+    if (pagesState.currentPage) {
+      try {
+        const pageRef = doc(db, "Pages", pagesState.currentPage.id);
+        await setDoc(
+          pageRef,
+          { title: pagesState.currentPage.title },
+          { merge: true },
+        );
+      } catch (error) {
+        console.error("Error updating page title:", error);
+      }
+    }
   };
 
   useEffect(() => {
@@ -54,7 +75,21 @@ export default function NotePage({ user }: { user: any }) {
       />
 
       {/* Main Content */}
-      <div className="flex-1 p-8 overflow-auto">
+      <div className="flex-1 py-16 px-8 overflow-auto">
+        <input
+          type="text"
+          className="text-4xl font-bold ml-8 w-full bg-transparent border-none focus:outline-none"
+          value={pagesState.currentPage?.title || ""}
+          onChange={(e) => {
+            const newTitle = e.target.value;
+            pagesState.setCurrentPage({
+              ...pagesState.currentPage!,
+              title: newTitle,
+            });
+          }}
+          onBlur={savePageTitle}
+        />
+        <Separator className="my-8" />
         {pagesState.currentBlocks && (
           <WithSavingToDatabase blocks={pagesState.currentBlocks} />
         )}
