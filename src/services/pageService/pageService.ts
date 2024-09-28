@@ -9,6 +9,7 @@ import {
   writeBatch,
   serverTimestamp,
   addDoc,
+  updateDoc,
 } from "firebase/firestore";
 
 import { Block, Page, PageWithBlocks } from "@/lib/types/types"; // Importing the Page interface
@@ -111,7 +112,15 @@ export async function savePageBlocks(
     throw error;
   }
 }
-
+/**
+ * This function is used to create a new page.
+ * It creates a new page document in the Pages collection.
+ * It creates an initial empty block for the new page.
+ * It returns the new page data.
+ * @param userId - The id of the user to create the page for.
+ * @param pageTitle - The title of the new page.
+ * @returns - The new page data.
+ */
 export async function createNewPage(
   userId: string,
   pageTitle: string,
@@ -133,7 +142,7 @@ export async function createNewPage(
     const newPageRef = await addDoc(pagesCollection, newPageData);
 
     // // Create an initial empty block for the new page
-    // const blocksCollection = collection(db, "Pages", newPageRef.id, "blocks");
+    const blocksCollection = collection(db, "Pages", newPageRef.id, "blocks");
     // Fetch the newly created page
     const newPage = await getDoc(newPageRef);
 
@@ -142,6 +151,84 @@ export async function createNewPage(
   } catch (error) {
     console.error("Error creating new page:", error);
     throw error;
+    return undefined;
+  }
+}
+
+/**
+ * This function is used to delete a page and all its associated blocks.
+ * It uses a batch to delete the page and all its blocks.
+ * It returns true if the page and all its blocks were deleted successfully, false otherwise.
+ * @param pageId - The id of the page to delete.
+ * @returns - True if the page and all its blocks were deleted successfully, false otherwise.
+ */
+export async function deletePage(pageId: string): Promise<boolean> {
+  try {
+    const pageRef = doc(db, "Pages", pageId);
+    const blocksCollectionRef = collection(db, "Pages", pageId, "blocks");
+
+    const batch = writeBatch(db);
+
+    // Delete the page document
+    batch.delete(pageRef);
+
+    // Delete all blocks associated with the page
+    const blocksSnapshot = await getDocs(blocksCollectionRef);
+    blocksSnapshot.forEach((blockDoc) => {
+      batch.delete(doc(blocksCollectionRef, blockDoc.id));
+    });
+
+    // Commit the batch
+    await batch.commit();
+
+    console.log(
+      `Page ${pageId} and its blocks have been deleted successfully.`,
+    );
+    return true;
+  } catch (error) {
+    console.error("Error deleting page:", error);
+    return false;
+  }
+}
+
+/**
+ * This function toggles the public status of a page.
+ * It changes the public field from true to false or vice versa.
+ * @param pageId - The id of the page to update.
+ * @returns - The updated Page object if successful, undefined otherwise.
+ */
+export async function togglePagePublicStatus(
+  pageId: string,
+): Promise<Page | undefined> {
+  try {
+    const pageRef = doc(db, "Pages", pageId);
+
+    // Get the current page data
+    const pageSnapshot = await getDoc(pageRef);
+    if (!pageSnapshot.exists()) {
+      console.error("Page not found");
+      return undefined;
+    }
+
+    const currentPage = pageSnapshot.data() as Page;
+
+    // Toggle the public status
+    const updatedPublicStatus = !currentPage.public;
+
+    // Update the page document
+    await updateDoc(pageRef, { public: updatedPublicStatus });
+
+    // Fetch the updated page
+    const updatedPageSnapshot = await getDoc(pageRef);
+
+    console.log(
+      `Page ${pageId} public status has been updated to ${updatedPublicStatus}`,
+    );
+
+    // Return the updated page data
+    return { id: pageId, ...updatedPageSnapshot.data() } as Page;
+  } catch (error) {
+    console.error("Error toggling page public status:", error);
     return undefined;
   }
 }

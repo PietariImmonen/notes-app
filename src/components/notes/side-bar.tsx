@@ -33,8 +33,8 @@ const SideBar = ({ isSidebarOpen, setIsSidebarOpen, user }: SideBarProps) => {
     if (newPage) {
       updatePages([...pages, newPage]);
       updateBlocks([...blocks, { pageId: newPage.id, blocks: {} }]);
-      router.push(`/notes/${newPage.id}`);
       setCurrentBlocks({ pageId: newPage.id, blocks: {} });
+      router.push(`/notes/${newPage.id}`);
     }
   };
 

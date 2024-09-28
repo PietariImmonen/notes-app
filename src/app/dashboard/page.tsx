@@ -1,12 +1,14 @@
 import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/firebase/firebase-admin";
-import DashboardMock from "@/components/dashboard/dashboard-mock";
+import NotesDashboard from "@/components/dashboard/notes-dashboard";
+import { User } from "@/lib/types/types";
 
 export default async function DashboardPage() {
+  const user = await getCurrentUser();
   return (
     <main className="container">
-      <DashboardMock />
+      <NotesDashboard user={user as unknown as User} />
     </main>
   );
 }

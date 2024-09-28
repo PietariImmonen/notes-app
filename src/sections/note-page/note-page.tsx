@@ -1,18 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PlusCircle, File, ChevronRight, ChevronLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+
 import WithSavingToDatabase from "@/components/editor/editor";
-import { fetchUserPages } from "@/services/pageService/pageService";
+
 import { usePagesStore } from "@/stores/pages/pagesStore";
 import SideBar from "@/components/notes/side-bar";
-import { Page, PageWithBlocks } from "@/lib/types/types";
+
 import { useParams } from "next/navigation";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/configs/firebase";
 import { Separator } from "@/components/ui/separator";
+import { fetchUserPages } from "@/services/pageService/pageService";
 
 export default function NotePage({ user }: { user: any }) {
   const pagesState = usePagesStore();
@@ -30,20 +29,15 @@ export default function NotePage({ user }: { user: any }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  /**
-   * Fetch the user's pages and set the current page and blocks
-   */
   const fetchUsersPages = async () => {
     const data = await fetchUserPages(user?.uid as string);
     pagesState.updateBlocks(data.blocks || []);
     pagesState.updatePages(data.pages || []);
-    pagesState.setCurrentPage(
-      data.pages?.find((page: Page) => page.id === id) || null,
-    );
-    pagesState.setCurrentBlocks(
-      data.blocks.find((block: PageWithBlocks) => block.pageId === id) || null,
-    );
   };
+
+  useEffect(() => {
+    fetchUsersPages();
+  }, [user]);
 
   const handlePageTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
@@ -76,11 +70,6 @@ export default function NotePage({ user }: { user: any }) {
     }
   };
 
-  useEffect(() => {
-    void fetchUsersPages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <div className="flex h-screen bg-white">
       {/* Sidebar */}
@@ -98,6 +87,7 @@ export default function NotePage({ user }: { user: any }) {
           value={pagesState.currentPage?.title || ""}
           onChange={handlePageTitleChange}
           onBlur={savePageTitle}
+          placeholder="Title for the page"
         />
         <Separator className="my-8" />
         {pagesState.currentBlocks && (
