@@ -18,7 +18,6 @@ export default function NotePage({ user }: { user: any }) {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedTab, setSelectedTab] = useState<"write" | "preview">("write");
-  const { id } = useParams();
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === "/") {
@@ -69,6 +68,7 @@ export default function NotePage({ user }: { user: any }) {
       }
     }
   };
+  console.log(pagesState.currentBlocks);
 
   return (
     <div className="flex h-screen bg-white">

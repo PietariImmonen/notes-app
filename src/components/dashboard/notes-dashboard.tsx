@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MoreVertical, Search } from "lucide-react";
+import { Loader2, MoreVertical, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import EditPageDropdown from "./edit-note-dropdown";
+import { Skeleton } from "../ui/skeleton";
 
 // Mock data for recent notes
 export default function NotesDashboard({ user }: { user: User }) {
@@ -32,13 +33,21 @@ export default function NotesDashboard({ user }: { user: User }) {
   const pagesState = usePagesStore();
   const router = useRouter();
   const [newPageTitle, setNewPageTitle] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   /**
    * Fetch the user's pages and set the current page and blocks
    */
   const fetchUsersPages = async () => {
-    const data = await fetchUserPages(user?.uid as string);
-    pagesState.updateBlocks(data.blocks || []);
-    pagesState.updatePages(data.pages || []);
+    setIsLoading(true);
+    try {
+      const data = await fetchUserPages(user?.uid as string);
+      pagesState.updateBlocks(data.blocks || []);
+      pagesState.updatePages(data.pages || []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -86,29 +95,33 @@ export default function NotesDashboard({ user }: { user: User }) {
           Create New Note
         </Button>
       </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {pagesState.pages.map((page) => (
-          <Card
-            key={page.id}
-            className="cursor-pointer"
-            onClick={() => navigateToNote(page.id)}
-          >
-            <CardHeader className="flex justify-between items-start">
-              <div className="flex justify-between items-center w-full">
-                <CardTitle>{page.title}</CardTitle>
-                <EditPageDropdown page={page} />
-              </div>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="animate-spin w-12 h-12" />
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {pagesState.pages.map((page) => (
+            <Card
+              key={page.id}
+              className="cursor-pointer"
+              onClick={() => navigateToNote(page.id)}
+            >
+              <CardHeader className="flex justify-between items-start">
+                <div className="flex justify-between items-center w-full">
+                  <CardTitle>{page.title}</CardTitle>
+                  <EditPageDropdown page={page} />
+                </div>
 
-              <CardDescription>
-                <div className="flex justify-between w-full flex-col">
+                <div className="flex justify-between w-full flex-col text-muted-foreground text-sm">
                   <p>{page.createdAt.toDate().toLocaleDateString()}</p>
                   <p>{page.public ? "Public" : "Private"}</p>
                 </div>
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        ))}
-      </div>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
