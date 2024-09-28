@@ -31,6 +31,7 @@ import { withSavingToDatabaseValue } from "./initValue";
 import { PageWithBlocks } from "@/lib/types/types";
 import { useParams } from "next/navigation";
 import { savePageBlocks } from "@/services/pageService/pageService";
+import { uploadMedia } from "@/services/mediaService/mediaService";
 
 const plugins = [
   Paragraph,
@@ -45,41 +46,41 @@ const plugins = [
   Code,
   Link,
   Embed,
-  // Image.extend({
-  //   options: {
-  //     async onUpload(file) {
-  //       const data = await uploadToCloudinary(file, 'image');
+  Image.extend({
+    options: {
+      async onUpload(file) {
+        const data = await uploadMedia(file, "image");
 
-  //       return {
-  //         src: data.secure_url,
-  //         alt: 'cloudinary',
-  //         sizes: {
-  //           width: data.width,
-  //           height: data.height,
-  //         },
-  //       };
-  //     },
-  //   },
-  // }),
-  // Video.extend({
-  //   options: {
-  //     onUpload: async (file) => {
-  //       const data = await uploadToCloudinary(file, 'video');
-  //       return {
-  //         src: data.secure_url,
-  //         alt: 'cloudinary',
-  //         sizes: {
-  //           width: data.width,
-  //           height: data.height,
-  //         },
-  //       };
-  //     },
-  //     onUploadPoster: async (file) => {
-  //       const image = await uploadToCloudinary(file, 'image');
-  //       return image.secure_url;
-  //     },
-  //   },
-  // }),
+        return {
+          src: data.secure_url,
+          alt: "cloudinary",
+          sizes: {
+            width: data.width || 0,
+            height: data.height || 0,
+          },
+        };
+      },
+    },
+  }),
+  Video.extend({
+    options: {
+      onUpload: async (file) => {
+        const data = await uploadMedia(file, "video");
+        return {
+          src: data.secure_url,
+          alt: "cloudinary",
+          sizes: {
+            width: data.width || 0,
+            height: data.height || 0,
+          },
+        };
+      },
+      onUploadPoster: async (file) => {
+        const image = await uploadMedia(file, "file");
+        return image.secure_url;
+      },
+    },
+  }),
   // File.extend({
   //   options: {
   //     onUpload: async (file) => {

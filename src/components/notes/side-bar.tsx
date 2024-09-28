@@ -15,8 +15,14 @@ interface SideBarProps {
 
 const SideBar = ({ isSidebarOpen, setIsSidebarOpen, user }: SideBarProps) => {
   const [newPageTitle, setNewPageTitle] = useState("");
-  const { pages, updatePages, updateBlocks, blocks, setCurrentBlocks } =
-    usePagesStore();
+  const {
+    pages,
+    updatePages,
+    updateBlocks,
+    blocks,
+    setCurrentBlocks,
+    setCurrentPage,
+  } = usePagesStore();
 
   // Get the id from the URL
   const { id } = useParams<{ id: string }>();
@@ -73,7 +79,16 @@ const SideBar = ({ isSidebarOpen, setIsSidebarOpen, user }: SideBarProps) => {
                   className={`w-full justify-start mb-1 ${
                     id === page.id ? "bg-gray-200" : ""
                   }`}
-                  onClick={() => router.push(`/notes/${page.id}`)}
+                  onClick={() => {
+                    setCurrentBlocks({
+                      pageId: page.id,
+                      blocks:
+                        blocks.find((block) => block.pageId === page.id)
+                          ?.blocks || {},
+                    });
+                    setCurrentPage(pages.find((p) => p.id === page.id) || null);
+                    router.push(`/notes/${page.id}`);
+                  }}
                 >
                   {page.title}
                 </Button>
