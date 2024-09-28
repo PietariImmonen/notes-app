@@ -6,6 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { usePathname, useRouter } from "next/navigation";
 
 const LogOutDropdownMenu = ({
   handleSignOut,
@@ -14,6 +15,7 @@ const LogOutDropdownMenu = ({
   handleSignOut: () => void;
   handleBackToDashboard: () => void;
 }) => {
+  const pathname = usePathname();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -22,9 +24,11 @@ const LogOutDropdownMenu = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem onClick={handleBackToDashboard}>
-          Back to dashboard
-        </DropdownMenuItem>
+        {pathname !== "/dashboard" && (
+          <DropdownMenuItem onClick={handleBackToDashboard}>
+            Back to dashboard
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={handleSignOut}>Log out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -24,7 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import EditPageDropdown from "./edit-note-dropdown";
+import EditPageDropdown from "./edit-page-dropdown";
 import { Skeleton } from "../ui/skeleton";
 
 // Mock data for recent notes
@@ -33,12 +33,12 @@ export default function NotesDashboard({ user }: { user: User }) {
   const pagesState = usePagesStore();
   const router = useRouter();
   const [newPageTitle, setNewPageTitle] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   /**
    * Fetch the user's pages and set the current page and blocks
    */
   const fetchUsersPages = async () => {
-    setIsLoading(true);
+    pagesState.setIsLoading(true);
     try {
       const data = await fetchUserPages(user?.uid as string);
       pagesState.updateBlocks(data.blocks || []);
@@ -46,7 +46,7 @@ export default function NotesDashboard({ user }: { user: User }) {
     } catch (error) {
       console.error(error);
     } finally {
-      setIsLoading(false);
+      pagesState.setIsLoading(false);
     }
   };
 
@@ -81,7 +81,7 @@ export default function NotesDashboard({ user }: { user: User }) {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Recent Notes Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-6">All notes</h1>
 
       <div className="mb-6 flex justify-between items-center">
         <Input
@@ -95,7 +95,7 @@ export default function NotesDashboard({ user }: { user: User }) {
           Create New Note
         </Button>
       </div>
-      {isLoading ? (
+      {pagesState.isLoading ? (
         <div className="flex justify-center items-center h-64">
           <Loader2 className="animate-spin w-12 h-12" />
         </div>

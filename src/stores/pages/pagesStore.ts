@@ -11,6 +11,7 @@ export type PagesState = {
   blocks: PageWithBlocks[];
   currentPage: Page | null;
   currentBlocks: PageWithBlocks | null;
+  isLoading: boolean;
 };
 
 export type PagesStoreActions = {
@@ -18,6 +19,7 @@ export type PagesStoreActions = {
   updateBlocks: (newBlocks: PageWithBlocks[]) => void;
   setCurrentPage: (page: Page | null) => void;
   setCurrentBlocks: (blocks: PageWithBlocks | null) => void;
+  setIsLoading: (isLoading: boolean) => void;
 };
 
 export type PagesStore = PagesState & PagesStoreActions;
@@ -27,6 +29,7 @@ export const initialState: PagesState = {
   blocks: [],
   currentPage: null,
   currentBlocks: null,
+  isLoading: false,
 };
 
 export const usePagesStore = create<PagesStore>()((set) => ({
@@ -50,5 +53,10 @@ export const usePagesStore = create<PagesStore>()((set) => ({
   setCurrentBlocks: (blocks: PageWithBlocks | null) =>
     set((state) => ({
       currentBlocks: blocks,
+    })),
+
+  setIsLoading: (isLoading: boolean) =>
+    set((state) => ({
+      isLoading,
     })),
 }));

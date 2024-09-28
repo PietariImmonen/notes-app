@@ -12,10 +12,13 @@ import {
   togglePagePublicStatus,
 } from "@/services/pageService/pageService";
 import { usePagesStore } from "@/stores/pages/pagesStore";
+import { useParams, usePathname, useRouter } from "next/navigation";
 
 const EditPageDropdown = ({ page }: { page: Page }) => {
   const { pages, updatePages } = usePagesStore();
-
+  const pathname = usePathname();
+  const { id } = useParams();
+  const router = useRouter();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -46,6 +49,9 @@ const EditPageDropdown = ({ page }: { page: Page }) => {
             await deletePage(page.id);
             const updatedPages = pages.filter((p) => p.id !== page.id);
             updatePages(updatedPages);
+            if (pathname.includes(page.id)) {
+              router.push("/dashboard");
+            }
           }}
         >
           Delete

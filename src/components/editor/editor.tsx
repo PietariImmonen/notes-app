@@ -32,6 +32,9 @@ import { PageWithBlocks } from "@/lib/types/types";
 import { useParams } from "next/navigation";
 import { savePageBlocks } from "@/services/pageService/pageService";
 import { uploadMedia } from "@/services/mediaService/mediaService";
+import { usePagesStore } from "@/stores/pages/pagesStore";
+import { Skeleton } from "../ui/skeleton";
+import { Loader2 } from "lucide-react";
 
 const plugins = [
   Paragraph,
@@ -108,16 +111,19 @@ const TOOLS = {
 
 const MARKS = [Bold, Italic, CodeMark, Underline, Strike, Highlight];
 
-function WithSavingToDatabase({ blocks }: { blocks: PageWithBlocks }) {
+function WithSavingToDatabase() {
   const editor = useMemo(() => createYooptaEditor(), []);
+  const pagesState = usePagesStore();
   const selectionRef = useRef(null);
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const onSaveToServer = async () => {
     const editorContent = editor.getEditorValue();
     try {
-      await savePageBlocks(blocks.pageId, editorContent);
-      console.log("saved");
+      if (pagesState.currentBlocks) {
+        await savePageBlocks(pagesState.currentBlocks.pageId, editorContent);
+        console.log("saved");
+      }
     } catch (error) {
       console.error("Error saving data:", error);
     }
@@ -150,9 +156,17 @@ function WithSavingToDatabase({ blocks }: { blocks: PageWithBlocks }) {
     };
   }, [editor, handleEditorChange, saveTimeout]);
 
+  if (pagesState.isLoading) {
+    return (
+      <div className="flex justify-center items-center">
+        <Loader2 className="animate-spin w-12 h-12" />
+      </div>
+    );
+  }
+
   return (
     <div ref={selectionRef} className="m-10">
-      {blocks && (
+      {pagesState.currentBlocks && (
         <YooptaEditor
           className="min-w-full h-full"
           editor={editor}
@@ -160,7 +174,7 @@ function WithSavingToDatabase({ blocks }: { blocks: PageWithBlocks }) {
           tools={TOOLS}
           marks={MARKS}
           selectionBoxRoot={selectionRef}
-          value={blocks.blocks || []}
+          value={pagesState.currentBlocks.blocks}
         />
       )}
     </div>
