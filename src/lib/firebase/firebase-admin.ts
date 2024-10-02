@@ -9,7 +9,11 @@ export const firebaseApp =
   getApps().find((it) => it.name === "firebase-admin-app") ||
   initializeApp(
     {
-      credential: cert(process.env.FIREBASE_ADMIN_SERVICE_ACCOUNT as string),
+      credential: cert({
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"), // Replace escaped newlines
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        projectId: process.env.FIREBASE_PROJECT_ID,
+      }),
     },
     "firebase-admin-app",
   );
